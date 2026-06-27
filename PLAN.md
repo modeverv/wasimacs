@@ -2264,6 +2264,13 @@ Validation notes:
   `host-network-fetch` and waits on the SharedArrayBuffer relay. Validation:
   `node --test tests/runtime/wasmacs-url-fetch-lisp.test.js` verifies the Pages
   artifact no longer uses `new XMLHttpRequest` inside that function.
+- 2026-06-13: added `proxy/ruby/server_https.rb` as a local HTTPS Ruby fetch
+  proxy for macOS/Chrome testing. It keeps the same `host.network.fetch` JSON
+  contract and CORS/PNA headers as `proxy/ruby/server.rb`, terminates TLS with
+  WEBrick, and generates a local `localhost`/`127.0.0.1`/`::1` certificate with
+  `mkcert` under ignored `proxy/ruby/.certs/` unless `TLS_CERT_FILE` and
+  `TLS_KEY_FILE` are supplied. Validation: `ruby -c proxy/ruby/server_https.rb`
+  and `node --test tests/runtime/fetch-proxy-samples.test.js`.
 - 2026-06-27: added root `extension/` for the Chrome companion extension from
   `CHROME_EXTENSION_PLAN.md`. The lane implements a Manifest V3 content-script
   bridge, module service worker, versioned ping/request protocol, default
@@ -2289,7 +2296,6 @@ Validation notes:
   adds `https://modeverv.github.io/wasmacs/*` as a content-script target and
   `https://modeverv.github.io` as a default caller origin. Validation:
   `npm --prefix extension test`.
-
 
 ## Milestone 15: High-Performance Renderer
 

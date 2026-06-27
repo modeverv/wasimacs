@@ -93,6 +93,23 @@ PORT=8787 \
 ruby proxy/ruby/server.rb
 ```
 
+For a Chrome-trusted local HTTPS endpoint on macOS, use the Ruby HTTPS sample.
+It uses `mkcert` to create a local certificate under `proxy/ruby/.certs/` on
+first start, unless `TLS_CERT_FILE` and `TLS_KEY_FILE` are set:
+
+```sh
+PORT=8788 ruby proxy/ruby/server_https.rb
+```
+
+Then pass the HTTPS endpoint to wasmacs:
+
+```text
+https://modeverv.github.io/wasmacs/app/xterm-atomics-pdump.html?network-proxy=https%3A%2F%2F127.0.0.1%3A8788%2F
+```
+
+If Chrome does not trust the generated certificate yet, run `mkcert -install`
+once for the current macOS user, then restart Chrome.
+
 ## Python
 
 ```sh

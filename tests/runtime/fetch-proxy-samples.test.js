@@ -2,9 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { once } from "node:events";
-import { access, readFile } from "node:fs/promises";
+import { access, mkdir, readFile, rm } from "node:fs/promises";
 import { constants } from "node:fs";
 import { spawn } from "node:child_process";
+import { request as httpsRequest } from "node:https";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -65,6 +66,55 @@ async function waitForProxy(port, processRef) {
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
   throw new Error(`proxy did not start on port ${port}`);
+}
+
+async function waitForHttpsProxy(port, processRef) {
+  const deadline = Date.now() + 60_000;
+  while (Date.now() < deadline) {
+    if (processRef.exitCode !== null) {
+      throw new Error(`proxy exited before becoming ready: ${processRef.stderrText || processRef.stdoutText}`);
+    }
+    try {
+      const response = await insecureHttpsJsonRequest({
+        port,
+        method: "GET",
+        path: "/",
+      });
+      if (response.status === 405 || response.status === 400) return;
+    } catch {
+      // Retry while the runtime starts.
+    }
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  throw new Error(`HTTPS proxy did not start on port ${port}`);
+}
+
+async function insecureHttpsJsonRequest({ port, method, path = "/", headers = {}, body }) {
+  return await new Promise((resolve, reject) => {
+    const request = httpsRequest({
+      hostname: "127.0.0.1",
+      port,
+      path,
+      method,
+      headers,
+      rejectUnauthorized: false,
+    }, (response) => {
+      const chunks = [];
+      response.on("data", (chunk) => chunks.push(chunk));
+      response.on("end", () => {
+        const text = Buffer.concat(chunks).toString("utf8");
+        resolve({
+          status: response.statusCode,
+          headers: response.headers,
+          text,
+          json: text && /^[[{]/.test(text.trim()) ? JSON.parse(text) : null,
+        });
+      });
+    });
+    request.on("error", reject);
+    if (body) request.write(body);
+    request.end();
+  });
 }
 
 async function startProxy({ command, args, env }) {
@@ -271,6 +321,90 @@ test("Ruby fetch proxy sample fetches allowed origins and rejects others", { tim
 
 test("Ruby fetch proxy sample defaults to all origins for localhost development", { timeout: 30_000, skip: !(await executableExists("ruby")) }, async () => {
   await assertRubyDefaultAllowsAnyOrigin();
+});
+
+test("Ruby HTTPS fetch proxy sample fetches through TLS and keeps CORS/PNA headers", { timeout: 30_000, skip: !(await executableExists("ruby")) || !(await executableExists("openssl")) }, async () => {
+  const upstream = await startUpstream();
+  const upstreamPort = upstream.address().port;
+  const proxyPort = await getFreePort();
+  const certDir = join(repoRoot, "tmp", `ruby-https-proxy-test-${process.pid}-${Date.now()}`);
+  const certFile = join(certDir, "localhost.pem");
+  const keyFile = join(certDir, "localhost-key.pem");
+  const allowedOrigin = `http://127.0.0.1:${upstreamPort}`;
+  const pageOrigin = "https://modeverv.github.io";
+  const targetUrl = `${allowedOrigin}/packages/archive-contents`;
+  let child;
+
+  try {
+    await mkdir(certDir, { recursive: true });
+    const openssl = spawn("openssl", [
+      "req",
+      "-x509",
+      "-newkey",
+      "rsa:2048",
+      "-nodes",
+      "-keyout",
+      keyFile,
+      "-out",
+      certFile,
+      "-days",
+      "1",
+      "-subj",
+      "/CN=127.0.0.1",
+      "-addext",
+      "subjectAltName=IP:127.0.0.1,DNS:localhost",
+    ], { stdio: "ignore" });
+    await once(openssl, "exit");
+    assert.equal(openssl.exitCode, 0);
+
+    child = await startProxy({
+      command: "ruby",
+      args: ["proxy/ruby/server_https.rb"],
+      env: {
+        PORT: String(proxyPort),
+        TLS_CERT_FILE: certFile,
+        TLS_KEY_FILE: keyFile,
+        WASMACS_PROXY_ALLOWED_ORIGINS: allowedOrigin,
+      },
+    });
+    await waitForHttpsProxy(proxyPort, child);
+    const preflight = await insecureHttpsJsonRequest({
+      port: proxyPort,
+      method: "OPTIONS",
+      headers: {
+        Origin: pageOrigin,
+        "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "content-type",
+        "Access-Control-Request-Private-Network": "true",
+      },
+    });
+    assert.equal([200, 204].includes(preflight.status), true);
+    assert.equal(preflight.headers["access-control-allow-origin"], pageOrigin);
+    assert.equal(preflight.headers["access-control-allow-private-network"], "true");
+    assert.match(preflight.headers.vary || "", /Origin/);
+
+    const response = await insecureHttpsJsonRequest({
+      port: proxyPort,
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Origin: pageOrigin,
+      },
+      body: JSON.stringify({
+        url: targetUrl,
+        method: "GET",
+        headers: [["accept", "text/plain"]],
+      }),
+    });
+    assert.equal(response.status, 200, response.text);
+    assert.equal(response.headers["access-control-allow-origin"], pageOrigin);
+    assert.equal(response.json.status, 200);
+    assert.equal(Buffer.from(response.json.bodyBase64, "base64").toString("utf8"), "archive-data");
+  } finally {
+    await stopProcess(child);
+    await new Promise((resolve) => upstream.close(resolve));
+    await rm(certDir, { recursive: true, force: true });
+  }
 });
 
 test("Python fetch proxy sample fetches allowed origins and rejects others", { timeout: 30_000, skip: !(await executableExists("python3")) }, async () => {

@@ -86,6 +86,7 @@ coverage/
 playwright-report/
 test-results/
 proxy/rust/target/
+proxy/ruby/.certs/
 
 # Python helper tooling
 .venv/
