@@ -290,7 +290,7 @@ Allowed wasmacs origins:
 [
   "http://localhost:*",
   "http://127.0.0.1:*",
-  "https://<user-configured-wasmacs-origin>/*"
+  "https://modeverv.github.io"
 ]
 ```
 
@@ -408,7 +408,7 @@ If using TypeScript, compile into `dist/` and keep extension source maps local o
       "matches": [
         "http://localhost/*",
         "http://127.0.0.1/*",
-        "https://<replace-with-wasmacs-origin>/*"
+        "https://modeverv.github.io/wasmacs/*"
       ],
       "js": ["src/content-script.js"],
       "run_at": "document_start"
@@ -418,7 +418,8 @@ If using TypeScript, compile into `dist/` and keep extension source maps local o
 }
 ```
 
-Do not ship `<replace-with-wasmacs-origin>` as-is. The agent must replace it or document how the user edits it.
+Do not ship `<replace-with-wasmacs-origin>` as-is. For this repository, the
+published Pages app uses `https://modeverv.github.io/wasmacs/*`.
 
 ## Milestone 0 — Repository Bootstrap
 
@@ -625,6 +626,11 @@ Validation notes:
 * 2026-06-27: service worker records bounded audit entries in
   `chrome.storage.local` without response bodies; options UI can display and
   clear the log. Structured error counters remain future work.
+* 2026-06-27: Pages smoke revealed that the extension was still local-only:
+  the content script did not match `https://modeverv.github.io/wasmacs/*`, and
+  the service worker default caller allowlist did not include
+  `https://modeverv.github.io`. Manifest version `0.1.1` adds the Pages content
+  script match and default caller origin.
 
 ## Milestone 5 — wasmacs Integration Contract
 

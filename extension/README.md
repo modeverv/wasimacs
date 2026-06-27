@@ -10,7 +10,8 @@ It is not a global CORS disable switch. It does not intercept all browser traffi
 2. Enable Developer mode.
 3. Click Load unpacked.
 4. Select this `extension/` directory.
-5. Open a local wasmacs page from `http://localhost/...` or `http://127.0.0.1/...`.
+5. Open a wasmacs page from `http://localhost/...`, `http://127.0.0.1/...`,
+   or `https://modeverv.github.io/wasmacs/...`.
 6. Inspect the extension service worker if Chrome reports any errors.
 
 ## Ping Test
@@ -57,6 +58,13 @@ Allowed page origins:
 
 - `http://localhost:*`
 - `http://127.0.0.1:*`
+- `https://modeverv.github.io`
+
+Content script injection is enabled for:
+
+- `http://localhost/*`
+- `http://127.0.0.1/*`
+- `https://modeverv.github.io/wasmacs/*`
 
 Allowed network targets:
 

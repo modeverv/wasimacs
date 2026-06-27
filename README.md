@@ -157,8 +157,9 @@ wasmacs page
 
 Load it from `chrome://extensions` with Developer mode enabled, then choose
 `extension/` with Load unpacked. The default extension policy allows local
-wasmacs pages at `http://localhost/*` and `http://127.0.0.1/*`, and allows
-target fetches for GNU ELPA, MELPA, raw GitHub files, and GitHub. It rejects
+wasmacs pages at `http://localhost/*` and `http://127.0.0.1/*`, plus the
+published Pages app at `https://modeverv.github.io/wasmacs/*`. It allows target
+fetches for GNU ELPA, MELPA, raw GitHub files, and GitHub. It rejects
 private-network targets and credentialed requests by default.
 
 On the Atomics/pdump page, `host.network.fetch` detects the companion with

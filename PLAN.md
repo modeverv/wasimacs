@@ -2281,6 +2281,15 @@ Validation notes:
   `node --test tests/runtime/wasmacs-url-fetch-lisp.test.js` passed 19 tests;
   extracted inline script from `src/wasm/xterm-atomics-pdump.html` passed
   `node --check`.
+- 2026-06-27: fixed the GitHub Pages companion-extension gap. The Pages app
+  already had the page-side bridge, but extension `content_scripts.matches`
+  covered only localhost and `DEFAULT_CALLER_ORIGINS` covered only local
+  origins, so `https://modeverv.github.io/wasmacs/` never reached the service
+  worker and fell back to CORS-blocked direct fetch. Manifest version `0.1.1`
+  adds `https://modeverv.github.io/wasmacs/*` as a content-script target and
+  `https://modeverv.github.io` as a default caller origin. Validation:
+  `npm --prefix extension test`.
+
 
 ## Milestone 15: High-Performance Renderer
 

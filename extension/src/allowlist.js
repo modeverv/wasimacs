@@ -10,6 +10,7 @@ export const DEFAULT_TARGET_ALLOWLIST = Object.freeze([
 export const DEFAULT_CALLER_ORIGINS = Object.freeze([
   "http://localhost:*",
   "http://127.0.0.1:*",
+  "https://modeverv.github.io",
 ]);
 
 export const DEFAULT_OPTIONS = Object.freeze({

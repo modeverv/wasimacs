@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "wasmacs CORS Companion",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "User-granted network capability provider for wasmacs.",
   "permissions": [
     "storage"
@@ -20,7 +20,8 @@
     {
       "matches": [
         "http://localhost/*",
-        "http://127.0.0.1/*"
+        "http://127.0.0.1/*",
+        "https://modeverv.github.io/wasmacs/*"
       ],
       "js": [
         "src/content-script.js"

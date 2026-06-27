@@ -11,6 +11,7 @@ import {
 test("caller origin allowlist accepts local wasmacs origins", () => {
   assert.equal(isCallerOriginAllowed("http://localhost:8175"), true);
   assert.equal(isCallerOriginAllowed("http://127.0.0.1:5173"), true);
+  assert.equal(isCallerOriginAllowed("https://modeverv.github.io"), true);
   assert.equal(isCallerOriginAllowed("https://example.com"), false);
 });
 
