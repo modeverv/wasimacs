@@ -182,6 +182,22 @@ test("Atomics pdump host network fetch relays through the main page", async () =
   assert.match(page, /Atomics\.notify\(signal,\s*0,\s*1\)/);
 });
 
+test("Atomics pdump host network fetch can use the Chrome companion extension", async () => {
+  const page = await readFile(join(repoRoot, "src/wasm/xterm-atomics-pdump.html"), "utf8");
+
+  assert.match(page, /async function companionNetworkFetch/);
+  assert.match(page, /function detectCompanionExtension/);
+  assert.match(page, /WASMACS_PROXY_PING/);
+  assert.match(page, /WASMACS_PROXY_PONG/);
+  assert.match(page, /WASMACS_PROXY_REQUEST/);
+  assert.match(page, /WASMACS_PROXY_RESPONSE/);
+  assert.match(page, /window\.postMessage\(/);
+  assert.match(page, /normalizeCompanionResponse/);
+  assert.match(page, /companion extension failed/);
+  assert.match(page, /bodyBase64: response\?\.bodyBase64/);
+  assert.match(page, /Object\.entries\(headersObject\)\.map/);
+});
+
 test("Pages temacs artifact patches host network fetch to the relay", async () => {
   const builder = await readFile(join(repoRoot, "src/build/build-site.mjs"), "utf8");
   const temacs = await readFile(

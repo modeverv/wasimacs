@@ -667,6 +667,15 @@ Private Network Access preflight, so local proxy samples answer
 `Access-Control-Allow-Private-Network: true` and echo the requesting `Origin`
 instead of wildcard CORS.
 
+The Chrome companion extension lane under `extension/` is another transport
+for the same explicit network capability. It is not a global CORS-disable
+mechanism and must not rewrite arbitrary web responses. The wasmacs page talks
+to a content-script bridge with versioned `WASMACS_PROXY_*` messages, the
+extension service worker validates caller origins and target allowlists, and the
+response is copied back as status, filtered headers, and base64 bytes. This
+keeps Chrome extension APIs and host permissions outside `emacs-core.wasm`;
+C/wasm still observes only the `host.network.fetch` request/response boundary.
+
 On the Atomics pdump route, C/wasm still observes `host.network.fetch` as a
 synchronous primitive, but the browser transport is owned by the main page. The
 worker posts a `host-network-fetch` request and waits on a SharedArrayBuffer

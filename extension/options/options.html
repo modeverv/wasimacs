@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>wasmacs CORS Companion Options</title>
+    <link rel="stylesheet" href="options.css">
+  </head>
+  <body>
+    <main>
+      <h1>wasmacs CORS Companion</h1>
+      <section>
+        <h2>Allowed wasmacs origins</h2>
+        <textarea id="allowedCallerOrigins" spellcheck="false"></textarea>
+      </section>
+      <section>
+        <h2>Allowed target URLs</h2>
+        <textarea id="targetAllowlist" spellcheck="false"></textarea>
+      </section>
+      <section class="grid">
+        <label>
+          Max response bytes
+          <input id="maxResponseBytes" type="number" min="1" step="1">
+        </label>
+        <label>
+          Timeout milliseconds
+          <input id="timeoutMs" type="number" min="1" step="1">
+        </label>
+      </section>
+      <section>
+        <label>
+          <input id="allowCredentials" type="checkbox">
+          Allow credentialed requests
+        </label>
+        <label>
+          <input id="allowPrivateNetworkTargets" type="checkbox">
+          Allow private network targets
+        </label>
+      </section>
+      <div class="actions">
+        <button id="save" type="button">Save</button>
+        <button id="reset" type="button">Reset defaults</button>
+        <span id="status" role="status"></span>
+      </div>
+      <section>
+        <div class="auditHeader">
+          <h2>Audit log</h2>
+          <button id="clearAudit" type="button">Clear log</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Caller</th>
+              <th>Method</th>
+              <th>URL</th>
+              <th>Status</th>
+              <th>Bytes</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody id="auditRows"></tbody>
+        </table>
+      </section>
+    </main>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

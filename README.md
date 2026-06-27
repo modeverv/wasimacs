@@ -141,6 +141,65 @@ However, direct browser `fetch` is constrained by CORS. If the remote package ar
 
 When an archive is blocked by CORS, users can configure a self-hosted fetch proxy under their own control. wasmacs does not provide a central proxy service.
 
+### Chrome companion extension
+
+For Chrome-based local/dev use, wasmacs also includes an unpacked companion
+extension in `extension/`. The extension provides the same explicit
+`host.network.fetch` capability without disabling CORS globally:
+
+```text
+wasmacs page
+  -> content-script bridge
+  -> extension service worker
+  -> allowlisted fetch
+  -> status / filtered headers / base64 body
+```
+
+Load it from `chrome://extensions` with Developer mode enabled, then choose
+`extension/` with Load unpacked. The default extension policy allows local
+wasmacs pages at `http://localhost/*` and `http://127.0.0.1/*`, and allows
+target fetches for GNU ELPA, MELPA, raw GitHub files, and GitHub. It rejects
+private-network targets and credentialed requests by default.
+
+On the Atomics/pdump page, `host.network.fetch` detects the companion with
+`WASMACS_PROXY_PING`. When the extension is available, package archive requests
+use `WASMACS_PROXY_REQUEST` / `WASMACS_PROXY_RESPONSE` before falling back to
+direct browser fetch or a configured self-hosted proxy. This path has been
+manually verified with `package-refresh-contents` reaching the GNU ELPA package
+menu from:
+
+```text
+http://127.0.0.1:5173/app/xterm-atomics-pdump.html?autostart
+```
+
+An Emacs-side smoke expression:
+
+```elisp
+(progn
+  (require 'wasmacs-url-fetch)
+  (setq wasmacs-url-fetch-proxy-url nil)
+  (wasmacs-url-fetch-enable)
+
+  (require 'package)
+  (setq package-user-dir "/home/user/.emacs.d/elpa"
+        package-check-signature nil
+        package-archives '(("gnu" . "https://elpa.gnu.org/packages/")))
+  (package-initialize)
+  (unless package-archive-contents
+    (package-refresh-contents))
+
+  (require 'use-package)
+  (setq use-package-always-ensure t)
+  (use-package rainbow-mode
+    :ensure t
+    :demand t))
+```
+
+See `extension/README.md` for the ping test, safe GET test, options page, and
+audit log notes.
+
+### Self-hosted proxy samples
+
 The `proxy/` directory includes sample implementations in Node, PHP, Rust, Perl, Ruby, Python, and PowerShell. Each sample accepts the same JSON request shape as the local development `__wasmacs_network_fetch` route and returns the response status, headers, and base64-encoded response bytes.
 
 The proxy samples are allowlist-based by default. The Ruby sample is the exception: it defaults to `*` for localhost-only development.

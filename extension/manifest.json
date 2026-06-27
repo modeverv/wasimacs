@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "wasmacs CORS Companion",
+  "version": "0.1.0",
+  "description": "User-granted network capability provider for wasmacs.",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://elpa.gnu.org/*",
+    "https://melpa.org/*",
+    "https://raw.githubusercontent.com/*",
+    "https://github.com/*"
+  ],
+  "background": {
+    "service_worker": "src/service-worker.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://localhost/*",
+        "http://127.0.0.1/*"
+      ],
+      "js": [
+        "src/content-script.js"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "options_page": "options/options.html"
+}

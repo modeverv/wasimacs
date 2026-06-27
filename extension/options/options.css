@@ -1,0 +1,82 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+  margin: 0;
+  background: Canvas;
+  color: CanvasText;
+}
+
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+h1,
+h2 {
+  margin: 0 0 12px;
+}
+
+section {
+  margin-block: 24px;
+}
+
+textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 112px;
+  padding: 10px;
+  font: 13px ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+input[type="number"] {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 6px;
+  padding: 8px;
+}
+
+label {
+  display: block;
+  margin-block: 10px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.actions,
+.auditHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+button {
+  padding: 8px 12px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+th,
+td {
+  border-block-end: 1px solid color-mix(in srgb, CanvasText 20%, transparent);
+  padding: 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+td.url {
+  max-width: 320px;
+  overflow-wrap: anywhere;
+}

@@ -2068,6 +2068,8 @@ Package install / network Phase 1 slice:
 - [x] Document network access in `README.md` and add optional self-hosted fetch
   proxy samples for Node, PHP, Go, Rust, Perl, Ruby, Python, and PowerShell under
   `proxy/`.
+- [x] Add a root `extension/` Chrome companion lane for user-granted CORS
+  proxying through the same `host.network.fetch` boundary.
 - [x] Thread a configured local `network-proxy` URL from the browser page into
   the wasm host network bridge and make localhost proxy samples CORS-ready.
 - [x] Add an Emacs-side `wasmacs-url-fetch-proxy-url` setting that can choose a
@@ -2262,6 +2264,23 @@ Validation notes:
   `host-network-fetch` and waits on the SharedArrayBuffer relay. Validation:
   `node --test tests/runtime/wasmacs-url-fetch-lisp.test.js` verifies the Pages
   artifact no longer uses `new XMLHttpRequest` inside that function.
+- 2026-06-27: added root `extension/` for the Chrome companion extension from
+  `CHROME_EXTENSION_PLAN.md`. The lane implements a Manifest V3 content-script
+  bridge, module service worker, versioned ping/request protocol, default
+  ELPA/MELPA/GitHub target allowlist, safe GET/HEAD fetch path, private-network
+  rejection, credential rejection by default, options UI, and bounded audit log.
+  Validation: `npm --prefix extension test` passed 12 tests.
+- 2026-06-27: fixed the first wasmacs-side Chrome companion integration smoke.
+  Manual `use-package rainbow-mode` failed on the package tarball because
+  `xterm-atomics-pdump.html` still tried browser direct `fetch()` first and did
+  not call the extension bridge. The page-side `hostNetworkFetch` now sends
+  versioned `WASMACS_PROXY_REQUEST` messages to the content-script bridge,
+  normalizes extension response headers back to the Elisp-friendly
+  `{name,value}` list shape, and falls back to direct fetch / configured proxy
+  only if the companion is unavailable or rejects the request. Validation:
+  `node --test tests/runtime/wasmacs-url-fetch-lisp.test.js` passed 19 tests;
+  extracted inline script from `src/wasm/xterm-atomics-pdump.html` passed
+  `node --check`.
 
 ## Milestone 15: High-Performance Renderer
 
